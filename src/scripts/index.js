@@ -1,13 +1,13 @@
 'use strict';
 
-const action = document.querySelector('.action');
+const action = document.querySelector('.fetch');
 const templateImageCard = document.querySelector('#image');
 const templateImagePopup = document.querySelector('#popup-image');
 const container = document.querySelector('.images');
-
+const content = document.querySelector('.content');
 const popup = document.querySelector('.popup');
 const popupContainer = document.querySelector('.popup .content');
-const popupClose = document.querySelector('.popup .action');
+const popupClose = document.querySelector('.popup .close');
 const loader = document.querySelector('.loader');
 
 const MAX_PAGE_IAMGES = 34;
@@ -62,7 +62,7 @@ const showLoader = function () {
 const hideLoader = function () {
     loaderTimeout = setTimeout(function () {
         loader.style.visibility = 'hidden';
-        loaderTimeout.clearTimeout();
+        clearTimeout(loaderTimeout);
     }, 700);
 }
 
@@ -91,15 +91,14 @@ const renderPictures = function (list) {
         throw Error(`Pictures not defined. The list length: ${list.length}`);
     }
 
-    const clone = templateImageCard.content.cloneNode(true);
+
     const fragment = document.createDocumentFragment();
 
     list.forEach(function (element) {
+        const clone = templateImageCard.content.cloneNode(true);
         const link = clone.querySelector('a');
-
-        link.href = element.url;
+        link.dataset.href = element.href;
         link.dataset.id = element.id;
-
         const image = clone.querySelector('img');
         image.src = cropImage(element.download_url, 5);
         image.alt = element.author;
@@ -135,7 +134,7 @@ const renderPopupPicture = function (picture) {
 }
 
 /**
- * Функция переклбчает класс открытия на попапе
+ * Функция переключает класс открытия на попапе
  */
 const togglePopup = function () {
     popup.classList.toggle('open');
@@ -151,14 +150,16 @@ const togglePopup = function () {
  */
 const actionHandler = function (evt) {
     evt.preventDefault();
-    const nextPage = evt.currentTarget.dataset.page;
-    evt.currentTarget.dataset.page = nextPage + 1;
+    const nextPage = parseInt(evt.currentTarget.dataset.page);
+    evt.currentTarget.dataset.page = nextPage  + 1;
 
     if (nextPage > MAX_PAGE_IAMGES) {
         console.warn(`WARN: You are trying to call a page that exceeds ${MAX_PAGE_IAMGES}`);
-        evt.currentTarget.disabled = true;
     } else {
         getPictures(nextPage);
+        if (nextPage + 1 > MAX_PAGE_IAMGES) {
+            evt.currentTarget.disabled = true;
+        }
     }
 }
 
@@ -172,7 +173,7 @@ const imageHandler = function (evt) {
     evt.preventDefault();
 
     if (evt.target.closest('a')) {
-        getPictureInfo(evt.target.dataset.id);
+        getPictureInfo(evt.target.closest('a').dataset.id);
     }
 }
 
